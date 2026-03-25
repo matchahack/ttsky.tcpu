@@ -66,6 +66,13 @@ module cpu_control #(
             data_valid           <= 1'b0;
             trace                <= 8'd0;
             data_mem[0]          <='0;
+            data_mem[1]          <='0;
+            data_mem[2]          <='0;
+            data_mem[3]          <='0;
+            data_mem[4]          <='0;
+            data_mem[5]          <='0;
+            data_mem[6]          <='0;
+            data_mem[7]          <='0;
         end else begin
             state <= next_state;
             data_valid <= 1'b0;

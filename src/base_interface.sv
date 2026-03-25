@@ -19,6 +19,7 @@ uart_rx #(
     .CLKS_PER_BIT(CLKS_PER_BIT) // CLK_FREQ/BAUD
 ) uart_rx_u (
     .i_Clock(clock),
+    .rst_n(nreset),
     .i_Rx_Serial(rx_serial_i),
     .o_Rx_DV(rx_valid_o),
     .o_Rx_Byte(rx_data_o)
@@ -41,6 +42,7 @@ uart_tx #(
     .CLKS_PER_BIT(CLKS_PER_BIT)
 ) uart_tx_u (
     .i_Clock(clock),
+    .rst_n(nreset),
     .i_Tx_DV(tx_valid_i),
     .i_Tx_Byte(tx_data_i),
     .o_Tx_Serial(tx_serial_o),

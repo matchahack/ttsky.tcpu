@@ -1,11 +1,6 @@
-/*
- * Copyright (c) 2026 Kai Harris
- * SPDX-License-Identifier: Apache-2.0
- */
- 
 module bootloader #(
     parameter  MEM_DEPTH = 7,
-    localparam PC_SIZE   = 3 // $clog2(MEM_DEPTH + 1)
+    localparam PC_SIZE   = $clog2(MEM_DEPTH + 1)
 )(
     input  logic                        clk,
     input  logic                        rst,
@@ -19,7 +14,7 @@ module bootloader #(
     // Storage
     // -------------------------------------------------------------------------
 
-    logic [7:0]        program_mem     [MEM_DEPTH:0];
+    logic [7:0]        program_mem [MEM_DEPTH:0];
     logic [PC_SIZE-1:0] program_counter;
 
     // -------------------------------------------------------------------------
@@ -34,16 +29,24 @@ module bootloader #(
     endgenerate
 
     // -------------------------------------------------------------------------
-    // Bootloader FSM
+    // Bootloader FSM with full reset
     // -------------------------------------------------------------------------
 
     logic mem_full;
     assign mem_full = (program_counter == MEM_DEPTH[PC_SIZE-1:0]);
 
+    integer j;
+
     always_ff @(posedge clk or negedge rst) begin
         if (!rst) begin
             program_counter <= '0;
             bootload_done   <= 1'b0;
+
+            // Reset entire memory array
+            for (j = 0; j <= MEM_DEPTH; j++) begin
+                program_mem[j] <= '0;
+            end
+
         end else if (uart_rx_valid && !bootload_done) begin
             program_mem[program_counter] <= instruction;
 
