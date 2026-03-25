@@ -37,8 +37,8 @@ module bootloader #(
 
     integer j;
 
-    always_ff @(posedge clk or negedge rst) begin
-        if (!rst) begin
+    always_ff @(posedge clk) begin
+        if (rst) begin
             program_counter <= '0;
             bootload_done   <= 1'b0;
 

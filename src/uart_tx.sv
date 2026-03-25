@@ -31,8 +31,8 @@ reg [7:0]    r_Tx_Data     = 0;
 reg          r_Tx_Done     = 0;
 reg          r_Tx_Active   = 0;
     
-always @(posedge i_Clock or negedge rst_n) begin
-    if (!rst_n) begin
+always @(posedge i_Clock) begin
+    if (rst_n) begin
         o_Tx_Serial   <= 1'b1;         // Drive Line High for Idle
         r_Tx_Done     <= 1'b0;
         r_Clock_Count <= 0;

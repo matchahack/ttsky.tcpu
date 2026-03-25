@@ -22,10 +22,10 @@ UART_BITS     = 8
 async def reset_dut(dut):
     """Assert then deassert active-low reset."""
     cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, unit="ns").start())
-    dut.rst_n.value = 0
+    dut.rst_n.value = 1
     for _ in range(RESET_CYCLES):
         await RisingEdge(dut.clk)
-    dut.rst_n.value = 1
+    dut.rst_n.value = 0
 
 async def run_program(dut, bytes_: list[int], description: str):
     """Upload *bytes_* over UART, wait for the result, and log data_in/data_out."""

@@ -44,12 +44,7 @@ module tb ();
       .uio_oe (uio_oe),   // IOs: Enable path (active high: 0=input, 1=output)
       .ena    (ena),      // enable - goes high when design is selected
       .clk    (clk),      // clock
-`ifndef GL_TEST
       .rst_n  (rst_n)     // not reset
-`endif
-`ifdef GL_TEST
-      .rst_n  (~rst_n)
-`endif
   );
 
 endmodule
