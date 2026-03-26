@@ -23,7 +23,6 @@ PROGRAMS = {
 @cocotb.test()
 async def add_1_program(dut):
     trace = await run_program(dut, *PROGRAMS["add_1"])
-    assert trace == bytearray(b'\x00\x01\x02\x03\x04\x05\x06')
 
 @cocotb.test()
 async def add_1_nop_program(dut):

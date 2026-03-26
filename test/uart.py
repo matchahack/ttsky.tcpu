@@ -13,10 +13,10 @@ logging.basicConfig(level=logging.DEBUG)
 # Constants (UPDATED)
 # ---------------------------------------------------------------------------
 
-CLK_PERIOD_NS = 100  # 10 MHz
-RESET_CYCLES  = 20   # was 10000 → reduced for cleaner reset
-SETTLE_CYCLES = int(5e5)  # increased for debugging
-BAUD_RATE     = 9600      # was 115200 → safer for mismatch debugging
+CLK_PERIOD_NS = 20  # 50 MHz
+RESET_CYCLES  = 20
+SETTLE_CYCLES = int(5e5)
+BAUD_RATE     = 115200
 UART_BITS     = 8
 
 # ---------------------------------------------------------------------------
@@ -24,36 +24,35 @@ UART_BITS     = 8
 # ---------------------------------------------------------------------------
 
 async def reset_dut(dut):
-    """Assert then deassert active-low reset."""
     cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, unit="ns").start())
     dut._log.info("Reset")
 
+    # Initialize outputs
     dut.rst_n.value = 0
     dut.ena.value = 1
     dut.uo_out.value = 0
     dut.ui_in.value = 0
     dut.uio_in.value = 0
+    dut.uart_tx.value = 1  # force idle
 
     for _ in range(RESET_CYCLES):
         await RisingEdge(dut.clk)
 
     dut.rst_n.value = 1
-
     for _ in range(RESET_CYCLES):
         await RisingEdge(dut.clk)
 
+    # Let outputs settle
+    await ClockCycles(dut.clk, 10)
 
 async def run_program(dut, bytes_: list[int], description: str):
     """Upload *bytes_* over UART, wait for the result, and log data."""
-
     await reset_dut(dut)
-
     dut.uart_rx.value = 1  # idle high
-    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, int(2e4))
 
     uart_source = UartSource(dut.uart_rx, baud=BAUD_RATE, bits=UART_BITS)
     uart_sink   = UartSink(dut.uart_tx, baud=BAUD_RATE, bits=UART_BITS)
-
     dut._log.info(f"\nRunning program: {description}")
     dut._log.info(f"Sending {len(bytes_)} bytes: {bytes_}")
     dut._log.info(f"Using baud rate: {BAUD_RATE}")

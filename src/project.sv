@@ -24,9 +24,21 @@ module tt_um_tcpu_alienflip (
   // List all unused inputs to prevent warnings
   wire _unused = &{ena, uio_in[7:0], ui_in[7:1], 1'b0};
 
+  // -----------------------------
+  // Synchronous reset generation
+  // -----------------------------
+  reg [1:0] rst_sync;
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+      rst_sync <= 2'b11;       // force reset initially
+    else
+      rst_sync <= {rst_sync[0], 1'b0}; // shift in 0 to de-assert reset
+  end
+  wire rst_sync_n = ~rst_sync[1]; // active high synchronous reset
+
   control control_u (
     .clk(clk),
-    .rst_n(rst_n),
+    .rst_n(rst_sync_n),        // use synchronized reset
     .rx_serial(ui_in[0]),
     .tx_serial(uo_out[0])
   );
