@@ -27,14 +27,14 @@ async def reset_dut(dut):
     """Assert then deassert active-low reset."""
     cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, unit="ns").start())
     dut._log.info("Reset")
-    dut.rst_n.value = 0
+    dut.rst_n.value = 1
     dut.ena.value = 1
     dut.uo_out.value = 0
     dut.ui_in.value = 0
     dut.uio_in.value = 0
     for _ in range(RESET_CYCLES):
         await RisingEdge(dut.clk)
-    dut.rst_n.value = 1
+    dut.rst_n.value = 0
     for _ in range(RESET_CYCLES):
         await RisingEdge(dut.clk)
 
