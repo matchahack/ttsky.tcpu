@@ -39,15 +39,64 @@ async def reset_dut(dut):
         await RisingEdge(dut.clk)
 
 async def run_program(dut, bytes_: list[int], description: str):
-    """Upload *bytes_* over UART, wait for the result, and log data_in/data_out."""
+    """Upload *bytes_* over UART, wait for the result, and log data."""
     await reset_dut(dut)
+    dut.uart_rx.value = 1
+    await RisingEdge(dut.clk)
+
     uart_source = UartSource(dut.uart_rx, baud=BAUD_RATE, bits=UART_BITS)
-    uart_sink   = UartSink(dut.uart_tx,   baud=BAUD_RATE, bits=UART_BITS)
-    
+    uart_sink   = UartSink(
+        dut.uart_tx,
+        baud=BAUD_RATE,
+        bits=UART_BITS
+    )
+
     dut._log.info(f"\nRunning program: {description}")
+    dut._log.info(f"Sending {len(bytes_)} bytes: {bytes_}")
+
+    # Send program
     await uart_source.write(bytes_)
     await uart_source.wait()
-    for i in range(SETTLE_CYCLES):
+    dut._log.info("UART write complete")
+
+    # Debug: track TX changes
+    last_tx = None
+
+    for cycle in range(SETTLE_CYCLES):
         await RisingEdge(dut.clk)
-        dut.uo_out.value = f'0000000{str(dut.uart_tx.value)}'
-    await uart_sink.read(7)
+
+        # Log TX transitions (helps see if UART is alive)
+        tx_val = str(dut.uart_tx.value)
+
+        if tx_val != last_tx:
+            dut._log.debug(f"[cycle {cycle}] uart_tx changed -> {tx_val}")
+            last_tx = tx_val
+
+        # Log when bytes arrive
+        if uart_sink.count() > 0:
+            dut._log.debug(
+                f"[cycle {cycle}] RX count = {uart_sink.count()}"
+            )
+
+        # Exit when enough data
+        if uart_sink.count() >= 7:
+            dut._log.info(f"Received 7 bytes after {cycle} cycles")
+            break
+    else:
+        # Timeout diagnostics
+        dut._log.error("Timeout waiting for UART data")
+        dut._log.error(f"Bytes received: {uart_sink.count()}")
+
+        # Try to dump partial data if any
+        partial = []
+        while uart_sink.count() > 0:
+            partial.append(uart_sink.read_nowait(1)[0])
+
+        dut._log.error(f"Partial data: {partial}")
+        raise RuntimeError("UART timeout")
+
+    # Read final data
+    data = uart_sink.read_nowait(7)
+    dut._log.info(f"Final received data: {data}")
+
+    return data

@@ -20,22 +20,19 @@ parameter s_TX_DATA_BITS = 3'b010;
 parameter s_TX_STOP_BIT  = 3'b011;
 parameter s_CLEANUP      = 3'b100;
 
-reg [2:0]    r_SM_Main;
-reg [$clog2(CLKS_PER_BIT)-1:0] r_Clock_Count;
-reg [2:0]    r_Bit_Index;
-reg [7:0]    r_Tx_Data;
-reg          r_Tx_Done;
-reg          r_Tx_Active;
-
+reg [2:0]    r_SM_Main     = 0;
+reg [$clog2(CLKS_PER_BIT)-1:0] r_Clock_Count = 0;
+reg [2:0]    r_Bit_Index   = 0;
+reg [7:0]    r_Tx_Data     = 0;
+reg          r_Tx_Done     = 0;
+reg          r_Tx_Active   = 0;
+    
 always @(posedge i_Clock) begin
     if (!rst_n) begin
-        o_Tx_Serial   <= 1'b1;
+        o_Tx_Serial   <= 1'b1;         // Drive Line High for Idle
         r_Tx_Done     <= 1'b0;
         r_Clock_Count <= 0;
         r_Bit_Index   <= 0;
-        r_SM_Main     <= s_IDLE;
-        r_Tx_Data     <= 0;
-        r_Tx_Active   <= 1'b0;
     end else begin
     
         case (r_SM_Main)

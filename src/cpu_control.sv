@@ -39,13 +39,11 @@ module cpu_control #(
     logic [7:0] data_mem    [MEM_DEPTH:0];
     logic [7:0] program_mem [MEM_DEPTH:0];
 
-    logic unused_bits;
-    assign unused_bits = ^instruction_register[4:3];
-
-
     // ========================
     // Program memory unpack
     // ========================
+    wire _unused_ir = &{instruction_register[4:3], 1'b0};
+
     genvar i;
     generate
         for (i = 0; i <= MEM_DEPTH; i++) begin

@@ -15,7 +15,7 @@ module base_interface #(
 logic tx_valid_i, tx_active_o, tx_done_o, rx_valid_o;
 logic [7:0] rx_data_o, tx_data_i;
 
-wire _unused = &{tx_active_o, 1'b0};
+wire _unused_txa = &{tx_active_o, 1'b0};
 
 uart_rx #(
     .CLKS_PER_BIT(CLKS_PER_BIT) // CLK_FREQ/BAUD
