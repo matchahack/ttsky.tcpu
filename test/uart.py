@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.DEBUG)
 # ---------------------------------------------------------------------------
 
 CLK_PERIOD_NS = 100 # 10 MHz
-RESET_CYCLES  = 10
+RESET_CYCLES  = 10000
 SETTLE_CYCLES = int(1e5)
 BAUD_RATE     = 115200
 UART_BITS     = 8
@@ -27,8 +27,8 @@ async def reset_dut(dut):
     """Assert then deassert active-low reset."""
     cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, unit="ns").start())
     dut._log.info("Reset")
-    dut.uart_rx.value = 0
     dut.rst_n.value = 0
+    dut.uo_out.value = 0
     for _ in range(RESET_CYCLES):
         await RisingEdge(dut.clk)
     dut.rst_n.value = 1
@@ -40,9 +40,11 @@ async def run_program(dut, bytes_: list[int], description: str):
     await reset_dut(dut)
     uart_source = UartSource(dut.uart_rx, baud=BAUD_RATE, bits=UART_BITS)
     uart_sink   = UartSink(dut.uart_tx,   baud=BAUD_RATE, bits=UART_BITS)
+    
     dut._log.info(f"\nRunning program: {description}")
     await uart_source.write(bytes_)
     await uart_source.wait()
     for i in range(SETTLE_CYCLES):
         await RisingEdge(dut.clk)
+        dut.uo_out.value = f'0000000{dut.uart_tx}'
     await uart_sink.read(7)
