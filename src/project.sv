@@ -17,30 +17,36 @@ module tt_um_tcpu_alienflip (
 );
 
   // All output pins must be assigned. If not used, assign to 0.
-  assign uo_out[7:1] = 7'b0;
+  assign uo_out[7:5] = 'b0;
+  assign uo_out[3:0] = 'b0;
   assign uio_out     = '0;
   assign uio_oe      = '0;
 
   // List all unused inputs to prevent warnings
-  wire _unused = &{ena, uio_in[7:0], ui_in[7:1], 1'b0};
+  wire _unused = &{ena, uio_in[7:0], ui_in[7:4], ui_in[2:0], 1'b0};
+
+  // CLKS_PER_BIT = (Frequency of i_Clock)/(Frequency of UART)
+  //// 50 MHz Clock, 115200 baud UART
+  //// (50000000)/(115200)  = 434
+  parameter CLKS_PER_BIT = 434;
 
   // -----------------------------
   // Synchronous reset generation
   // -----------------------------
-  reg [1:0] rst_sync;
-  always @(posedge clk or negedge rst_n) begin
-    if (!rst_n)
-      rst_sync <= 2'b11;       // force reset initially
-    else
-      rst_sync <= {rst_sync[0], 1'b0}; // shift in 0 to de-assert reset
-  end
-  wire rst_sync_n = ~rst_sync[1]; // active high synchronous reset
+  wire rst_sync;
+  sync_reset sync_reset_u (
+      .clk(clk),
+      .rst_n(rst_n),
+      .rst_sync(rst_sync)
+  );
 
-  control control_u (
-    .clk(clk),
-    .rst_n(rst_sync_n),        // use synchronized reset
-    .rx_serial(ui_in[0]),
-    .tx_serial(uo_out[0])
+  base_interface #(
+      .CLKS_PER_BIT(CLKS_PER_BIT)
+  ) base_interface_u (
+      .clk(clk),
+      .rst_n(rst_n),
+      .rx_serial_i(ui_in[3:3]),
+      .tx_serial_o(uo_out[4:4])
   );
 
 endmodule

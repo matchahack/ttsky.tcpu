@@ -1,8 +1,13 @@
+/*
+ * Copyright (c) 2026 Kai Harris
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 module compute_top #(
     parameter MEM_DEPTH = 7
 )(
     input  logic       clk,
-    input  logic       rst,
+    input  logic       rst_n,
     input  logic       uart_rx_valid,
     input  logic       uart_tx_done,
     input  logic [7:0] data_in,
@@ -17,7 +22,7 @@ module compute_top #(
         .MEM_DEPTH(MEM_DEPTH)
     ) bootloader_u (
         .clk(clk),
-        .rst(rst),
+        .rst_n(rst_n),
         .bootload_done(bootload_done),
         .uart_rx_valid(uart_rx_valid),
         .instruction(data_in),
@@ -28,7 +33,7 @@ module compute_top #(
         .MEM_DEPTH(MEM_DEPTH)
     ) cpu_control_u (
         .clk(clk),
-        .rst(rst),
+        .rst_n(rst_n),
         .bootload_done(bootload_done),
         .uart_tx_done(uart_tx_done),
         .program_mem_flat(program_mem_flat),
