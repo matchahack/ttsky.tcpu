@@ -44,7 +44,7 @@ module tt_um_tcpu_alienflip (
       .CLKS_PER_BIT(CLKS_PER_BIT)
   ) base_interface_u (
       .clk(clk),
-      .rst_n(rst_n),
+      .rst_n(~rst_sync),
       .rx_serial_i(ui_in[3:3]),
       .tx_serial_o(uo_out[4:4])
   );
